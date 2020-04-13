@@ -14,26 +14,26 @@ class MyApp extends StatelessWidget {
       child: Row(
         children: <Widget>[
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
-                      'Oeschinen Lake Campground',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      )
+                        'Oeschinen Lake Campground',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        )
                     ),
                   ),
                   Text(
-                    'Kandersteg, Switzerland',
-                    style: TextStyle(
-                      color: Colors.grey[500],
-                    )
+                      'Kandersteg, Switzerland',
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                      )
                   )
                 ],
-            )
+              )
           ),
           Icon(
             Icons.star,
@@ -47,14 +47,14 @@ class MyApp extends StatelessWidget {
     Color color = Theme.of(context).primaryColor;
 
     Widget buttonSection = Container (
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          _buildButtonColumn(color, Icons.call, 'CALL'),
-          _buildButtonColumn(color, Icons.near_me, 'ROUTE'),
-          _buildButtonColumn(color, Icons.share, 'SHARE'),
-        ],
-      )
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            _buildButtonColumn(color, Icons.call, 'CALL'),
+            _buildButtonColumn(color, Icons.near_me, 'ROUTE'),
+            _buildButtonColumn(color, Icons.share, 'SHARE'),
+          ],
+        )
     );
 
     Widget textSection = Container(
@@ -73,22 +73,22 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter layout demo',
       home: Scaffold(
-        appBar: AppBar(
-          title: Text('Flutter layout demo'),
-        ),
-        body: ListView(
-          children: <Widget>[
-            Image.asset(
-              'images/lake.jpg',
-              width: 600,
-              height: 240,
-              fit: BoxFit.cover,
-            ),
-            titleSection,
-            buttonSection,
-            textSection,
-          ],
-        )
+          appBar: AppBar(
+            title: Text('Flutter layout demo'),
+          ),
+          body: ListView(
+            children: <Widget>[
+              Image.asset(
+                'images/lake.jpg',
+                width: 600,
+                height: 240,
+                fit: BoxFit.cover,
+              ),
+              titleSection,
+              buttonSection,
+              textSection,
+            ],
+          )
       ),
     );
   }
@@ -100,15 +100,15 @@ class MyApp extends StatelessWidget {
       children: <Widget>[
         Icon(icon, color: color),
         Container(
-          margin: const EdgeInsets.only(top: 8),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              color: color,
-            ),
-          )
+            margin: const EdgeInsets.only(top: 8),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: color,
+              ),
+            )
         )
       ],
     );

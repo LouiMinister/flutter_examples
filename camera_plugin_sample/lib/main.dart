@@ -3,16 +3,24 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' show join;
+import 'package:path/path.dart' as Path;
 import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+
+List<CameraDescription> cameras;
+String imgPath;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // 디바이스에서 이용가능한 카메라 목록을 받아옵니다.
-  final cameras = await availableCameras();
+  cameras = await availableCameras();
+
+  print(cameras);
 
   // 이용가능한 카메라 목록에서 특정 카메라를 얻습니다.
-  final firstCamera = cameras.first;
+  //final firstCamera = cameras.first;
 
 //  runApp(
 //    MaterialApp(
@@ -41,34 +49,113 @@ class MainScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Main Screen'),
       ),
-      body : Center(
-        child: RaisedButton(
-          child: Text('open camera'),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder : (context) => TakePictureScreen()),
-            );
-          },
-        )
+      body :  Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              RaisedButton(
+                child: Text('open camera'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder : (context) => TakePictureScreen()),
+                  );
+                }
+              ),
+              RaisedButton(
+                child: Text('httpScreen'),
+                onPressed: (){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder : (context) => HttpScreen()),
+                  );
+                },
+              )
+            ],
+          )
+        ],
       ),
     );
   }
 }
 
+class HttpScreen extends StatefulWidget {
+  HttpScreen({
+    Key key
+  }) : super(key: key);
+
+  @override
+  State createState()  => HttpScreenState();
+}
+
+class HttpScreenState extends State<HttpScreen> {
+
+  String _httpText = "";
+
+  @override
+  void initState(){
+    super.initState();
+
+    _fetchPosts();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Http Screen'),
+      ),
+      body: Center(
+        child: Column(
+          children : [
+            Text(_httpText),
+            RaisedButton(
+              child: Text("image send"),
+              onPressed: () async {
+
+                FormData formData = new FormData.fromMap({
+                  "file1": await MultipartFile.fromFile(imgPath, filename: Path.basename(imgPath))
+                });
+
+                //sdcard/Download/whatisthis.txt
+
+
+                new Dio().post("https://basmtest.ktbcredit.com:8443/api/flutter", data: formData)
+                    .then((response){
+                      print(response);
+                      new DefaultCacheManager().emptyCache();
+                    })
+                    .catchError((error) => print(error));
+
+
+              },
+            )
+          ]
+        )
+      ),
+    );
+  }
+
+  void _fetchPosts() async {
+    final response = await http.get('https://jsonplaceholder.typicode.com/posts');
+
+
+    setState(() {
+      //_httpText = response.body;
+      _httpText = imgPath;
+    });
+  }
+
+}
+
 // 사용자가 주어진 카메라를 사용하여 사진을 찍을 수 있는 화면
 class TakePictureScreen extends StatefulWidget {
 
-  final CameraDescription camera = availableCameras()
-  .then((data) {
-    return data.first;
-  });
 
-  //final CameraDescription camera;
-
-  const TakePictureScreen({
-    Key key,
-    @required this.camera,
+  TakePictureScreen({
+    Key key
   }) : super(key: key);
 
   @override
@@ -85,7 +172,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     // 카메라의 현재 출력물을 보여주기 위해 CameraController를 생성합니다.
     _controller = CameraController(
       // 이용 가능한 카메라 목록에서 특정 카메라를 가져옵니다.
-      widget.camera,
+      cameras[0],
       // 적용할 해상도를 지정합니다.
       ResolutionPreset.max,
     );
@@ -129,16 +216,23 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             // 카메라 초기화가 완료됐는지 확인합니다.
             await _initializeControllerFuture;
 
+            // Dio
+            DefaultCacheManager dio = new DefaultCacheManager();
+            await dio.emptyCache();
+
             // path 패키지를 사용하여 이미지가 저장될 경로를 지정합니다.
-            final path = join(
+            final path = Path.join(
               // 본 예제에서는 임시 디렉토리에 이미지를 저장합니다. `path_provider`
               // 플러그인을 사용하여 임시 디렉토리를 찾으세요.
               (await getTemporaryDirectory()).path,
-              '${DateTime.now()}.png',
+              //'${DateTime.now()}.png',
+              'test.png',
             );
+            print("path : $path");
 
             // 사진 촬영을 시도하고 저장되는 경로를 로그로 남깁니다.
             await _controller.takePicture(path);
+            imgPath = path;
 
             // 사진을 촬영하면, 새로운 화면으로 넘어갑니다.
             Navigator.push(
@@ -158,7 +252,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 }
 
 // 사용자가 촬영한 사진을 보여주는 위젯
-class DisplayPictureScreen extends StatelessWidget {
+class DisplayPictureScreen extends StatelessWidget{
   final String imagePath;
 
   const DisplayPictureScreen({Key key, this.imagePath}) : super(key: key);
